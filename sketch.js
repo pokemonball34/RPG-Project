@@ -1,4 +1,4 @@
-var scene = "Battle";
+var scene = "Overworld";
 var mapHome = [
     [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 2, 1, 0],
     [2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1],
@@ -88,6 +88,69 @@ var player = {
   spells: [spells.embers, spells.glow, spells.doubleSlash, spells.soothe],
 };
 
+var ally1 = {
+  firstName: "Ally",
+  lastName: "1",
+  hp: 120,
+  maxHp: 120,
+  mp: 20,
+  maxMp: 20,
+  def: 30,
+  res: 20,
+  spd: 15,
+  physAtk: 40,
+  magAtk: 20,
+  inventory: ["Short Bow", "Potion", "Red Staff"],
+  weapon: "Wood Sword",
+  head: "hood",
+  body: "Iron Armor",
+  boots: "Leather Boots",
+  hands: "Leather Gloves",
+  spells: [spells.embers, spells.glow, spells.doubleSlash, spells.soothe],
+};
+
+var ally2 = {
+  firstName: "Ally",
+  lastName: "2",
+  hp: 80,
+  maxHp: 80,
+  mp: 60,
+  maxMp: 40,
+  def: 30,
+  res: 20,
+  spd: 15,
+  physAtk: 40,
+  magAtk: 20,
+  inventory: ["Short Bow", "Potion", "Red Staff"],
+  weapon: "Wood Sword",
+  head: "hood",
+  body: "Iron Armor",
+  boots: "Leather Boots",
+  hands: "Leather Gloves",
+  spells: [spells.embers, spells.glow, spells.doubleSlash, spells.soothe],
+};
+
+var ally3 = {
+  firstName: "Ally",
+  lastName: "3",
+  hp: 90,
+  maxHp: 90,
+  mp: 40,
+  maxMp: 400,
+  def: 30,
+  res: 20,
+  spd: 15,
+  physAtk: 40,
+  magAtk: 20,
+  inventory: ["Short Bow", "Potion", "Red Staff"],
+  weapon: "Wood Sword",
+  head: "hood",
+  body: "Iron Armor",
+  boots: "Leather Boots",
+  hands: "Leather Gloves",
+  spells: [spells.embers, spells.glow, spells.doubleSlash, spells.soothe],
+};
+
 var villager = {
   name: "Dummy A",
   x: 1,
@@ -104,8 +167,8 @@ var enemy = {
   name: "Dummy C",
   x: 14,
   y: 9,
-  hp: 50,
-  maxHp: 50,
+  hp: 150,
+  maxHp: 150,
   mp: 20,
   maxMp: 20,
   def: 10,
@@ -113,9 +176,26 @@ var enemy = {
   spd: 10,
 };
 
-function startBattle() {
-  scene = "Battle";
+function textbox() {
   
+};
+
+function battle() {
+  if (keyWentDown(49)) { //1 button
+    if (player.physAtk >= enemy.def) {
+      enemy.hp = enemy.hp - (player.physAtk - enemy.def);
+      println(enemy.hp);
+    }
+  }
+  else if (keyWentDown(53)) { //5 button
+    scene = "Overworld";
+    player.x -= 1;
+  }
+  if (enemy.hp <= 0) {
+    scene = "Overworld";
+    enemy.x = -1;
+    enemy.y = -1;
+  }
 };
 var colorMap;
 
@@ -134,6 +214,7 @@ function setup() {
 
 function draw() {
   if (scene === "Overworld") {
+    background(255);
     if ((player.x === enemy.x + 1 && player.y === enemy.y) || 
         (player.x === enemy.x - 1 && player.y === enemy.y) || 
         (player.y === enemy.y + 1 && player.x === enemy.x) || 
@@ -183,14 +264,55 @@ function draw() {
     }
     else if (scene === "Battle") {
         background(255);
-        text(player.firstName + " " + player.lastName, 100, 180);
-        text("HP: " + player.hp, 100, 200);
-        text("MP: " + player.mp, 100, 220);
-        text("Attack", 50, 150);
-        text("Abilities", 100, 150);
-        text("Items", 150, 150);
-        text("Defend", 190, 150);
-        text("Escape", 240, 150);
+        
+        //Player's Box 1
+        fill(209);
+        rect(0, 4 * (height / 5), width / 4, height / 5);
+        fill(0);
+        text(player.firstName + " " + player.lastName, 5, 340);
+        text("HP: " + player.hp, 5, 370);
+        text("MP: " + player.mp, 5, 390);
+        
+        
+        //Player's Box 2
+        fill(209);
+        rect((width / 4), 4 * (height / 5), 2 * (width / 4), height / 5);
+        fill(0);
+        text(ally1.firstName + " " + ally1.lastName, 105, 340);
+        text("HP: " + ally1.hp, 105, 370);
+        text("MP: " + ally1.mp, 105, 390);
+        
+        //Player's Box 3
+        fill(209);
+        rect(3 * (width / 4), 4 * (height / 5), 3 * (width / 4), height / 5);
+        fill(0);
+        text(ally2.firstName + " " + ally2.lastName, 205, 340);
+        text("HP: " + ally2.hp, 205, 370);
+        text("MP: " + ally2.mp, 205, 390);
+        
+        //Player's Box 4
+        fill(209);
+        rect(width, 4 * (height / 5), width, height / 5);
+        fill(0);
+        text(ally3.firstName + " " + ally3.lastName, 305, 340); 
+        text("HP: " + ally3.hp, 305, 370);
+        text("MP: " + ally3.mp, 305, 390);
+        
+        //Enemy
+        fill(229, 27, 9);
+        rect(150, 100, 100, 100);
+        fill(0);
+        text(enemy.name, 155, 120);
+        text("HP: " + enemy.hp, 155, 155);
+        text("MP: " + enemy.mp, 155, 170);
+        
+        text("Attack", 50, 50);
+        text("Abilities", 100, 50);
+        text("Items", 150, 50);
+        text("Defend", 190, 50);
+        text("Escape", 240, 50);
+        
+        battle();
     }
     else if (scene === "Event") {
     }
@@ -201,5 +323,12 @@ function draw() {
       background(255);
       textSize(24);
       text("Menu", 200, 100);
+    }
+    else if (scene === "GameOver") {
+      if (keyWentDown(27)) {
+        player.x = 0;
+        player.y = 9;
+        scene = "Overworld";
+      }
     }
 } 
