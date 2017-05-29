@@ -1,4 +1,4 @@
-var scene = "Overworld";
+var scene = "Battle";
 var mapHome = [
     [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 2, 1, 0],
     [2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1],
@@ -13,6 +13,36 @@ var mapHome = [
     [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
 ];
 
+var items = {
+  potion: {
+    name: "Potion",
+    dmg: -20,
+    crit: 0,
+    description: "A potion that heals 20HP to one ally",
+  },
+  
+  bluePotion: {
+    name: "Blue Potion",
+    dmg: -20,
+    description: "A blue potion that recovers 20MP to an ally."
+  },
+  
+  hCheese: {
+    name: "Holey Cheese",
+    dmgtype: "light",
+    dmg: 50,
+    crit: 0,
+    description: "A heavenly piece of cheese that deals 50 damage of light damage to an enemy."
+  },
+  
+  uhCheese: {
+    name: "Unholey Cheese",
+    dmgtype: "dark",
+    dmg: 50,
+    crit: 0,
+    description: "A devilish piece of cheese that deals 50 damage of dark damage to an enemy."
+  },
+};
 var spells = {
   embers: {
     name: "Embers",
@@ -79,13 +109,14 @@ var player = {
   charisma: 1,
   x: 0,
   y: 9,
-  inventory: ["Short Bow", "Potion", "Red Staff"],
+  equipment: ["Short Bow", "Potion", "Red Staff"],
   weapon: "Wood Sword",
   head: "hood",
   body: "Iron Armor",
   boots: "Leather Boots",
   hands: "Leather Gloves",
   spells: [spells.embers, spells.glow, spells.doubleSlash, spells.soothe],
+  items: [items.hCheese, items.potion, items.bluePotion],
 };
 
 var ally1 = {
@@ -183,9 +214,18 @@ function textbox() {
 function battle() {
   if (keyWentDown(49)) { //1 button
     if (player.physAtk >= enemy.def) {
-      enemy.hp = enemy.hp - (player.physAtk - enemy.def);
-      println(enemy.hp);
+      var dmg = player.physAtk - enemy.def;
+      enemy.hp -= dmg;
     }
+  }
+  else if (keyWentDown(50)) { //2 button
+    scene = "aMenu";
+  }
+  else if (keyWentDown(51)) { //3 button
+    scene = "bMenu";
+  }
+  else if (keyWentDown(52)) { //4 button
+    var defending = true;
   }
   else if (keyWentDown(53)) { //5 button
     scene = "Overworld";
@@ -262,6 +302,7 @@ function draw() {
     noStroke();
     rect(enemy.x * 25, enemy.y * 25, 25, 25);  //Enemy
     }
+
     else if (scene === "Battle") {
         background(255);
         
@@ -313,6 +354,20 @@ function draw() {
         text("Escape", 240, 50);
         
         battle();
+    }
+    if (scene === "bMenu") {
+      if (keyWentDown(27)) {  //Leave items menu
+        scene = "Battle";
+      }
+      fill(0);
+      rect(200, 100, 100, 100);
+    }
+    else if (scene === "aMenu") {
+      if (keyWentDown(27)) {  //Leaves abilities menu
+        scene = "Battle";
+      }
+      fill(0);
+      rect(100, 100, 100, 100);
     }
     else if (scene === "Event") {
     }
