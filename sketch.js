@@ -1,4 +1,4 @@
-var scene = "Battle";
+var scene = "bMenu";
 var mapHome = [
     [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 2, 1, 0],
     [2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1],
@@ -32,7 +32,7 @@ var items = {
     dmgtype: "light",
     dmg: 50,
     crit: 0,
-    description: "A heavenly piece of cheese that deals 50 damage of light damage to an enemy."
+    description: "A heavenly piece of cheese that deals 50 damage of light damage to an enemy. It's filled with tons of holes..."
   },
   
   uhCheese: {
@@ -40,7 +40,7 @@ var items = {
     dmgtype: "dark",
     dmg: 50,
     crit: 0,
-    description: "A devilish piece of cheese that deals 50 damage of dark damage to an enemy."
+    description: "A devilish piece of cheese that deals 50 damage of dark damage to an enemy. It doesn't have a single hole in it..."
   },
 };
 var spells = {
@@ -347,11 +347,14 @@ function draw() {
         text("HP: " + enemy.hp, 155, 155);
         text("MP: " + enemy.mp, 155, 170);
         
-        text("Attack", 50, 50);
-        text("Abilities", 100, 50);
-        text("Items", 150, 50);
-        text("Defend", 190, 50);
-        text("Escape", 240, 50);
+        fill(143, 147, 155);
+        rect(0, 0, 400, 50);
+        fill(0);
+        text("Attack", 25, 25);
+        text("Abilities", 100, 25);
+        text("Items", 175, 25);
+        text("Defend", 250, 25);
+        text("Escape", 325, 25);
         
         battle();
     }
@@ -359,8 +362,14 @@ function draw() {
       if (keyWentDown(27)) {  //Leave items menu
         scene = "Battle";
       }
-      fill(0);
-      rect(200, 100, 100, 100);
+      fill(173, 204, 255);
+      rect(10, 60, 380, 250);
+      for (var i = 0; i < ceil(player.items.length); i++) {
+        for (var a = 0; a < 2; a++) {
+        fill(0);
+        text(player.items[i].name, 50 + (200 * a), 100 + (50 * i));
+        }
+      }
     }
     else if (scene === "aMenu") {
       if (keyWentDown(27)) {  //Leaves abilities menu
