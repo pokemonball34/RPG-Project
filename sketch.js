@@ -1,4 +1,8 @@
-var scene = "bMenu";
+var scene = "Battle";
+var select = 0;
+var bMenuX = [10, 201];
+var bMenuY =[60, 60, 110, 110, 160, 160, 210, 210, 259, 259];
+var battleMenuX = [0, 80, 160, 240, 319];
 var mapHome = [
     [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 2, 1, 0],
     [2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 2, 0, 1],
@@ -116,7 +120,7 @@ var player = {
   boots: "Leather Boots",
   hands: "Leather Gloves",
   spells: [spells.embers, spells.glow, spells.doubleSlash, spells.soothe],
-  items: [items.hCheese, items.potion, items.bluePotion],
+  items: [items.hCheese, items.potion, items.bluePotion, items.uhCheese, items.potion],
 };
 
 var ally1 = {
@@ -206,28 +210,35 @@ var enemy = {
   res: 0,
   spd: 10,
 };
-
 function textbox() {
   
 };
 
 function battle() {
-  if (keyWentDown(49)) { //1 button
+  if (keyWentDown(39) && select < 4) { //Right
+    select++;
+  }
+  else if (keyWentDown(37) && select > 0) { //Left
+    select--;
+  }
+  else if (select === 0 && keyWentDown(13)) { //Attack Button
     if (player.physAtk >= enemy.def) {
       var dmg = player.physAtk - enemy.def;
       enemy.hp -= dmg;
     }
   }
-  else if (keyWentDown(50)) { //2 button
+  else if (select === 1 && keyWentDown(13)) { //Abilities Button
     scene = "aMenu";
+    select = 0;
   }
-  else if (keyWentDown(51)) { //3 button
+  else if (select === 2 && keyWentDown(13)) { //Items Button
     scene = "bMenu";
+    select = 0;
   }
-  else if (keyWentDown(52)) { //4 button
+  else if (select === 3 && keyWentDown(13)) { //Defend Button
     var defending = true;
   }
-  else if (keyWentDown(53)) { //5 button
+  else if (select === 4 && keyWentDown(13)) { //Escape Button
     scene = "Overworld";
     player.x -= 1;
   }
@@ -349,25 +360,48 @@ function draw() {
         
         fill(143, 147, 155);
         rect(0, 0, 400, 50);
+        stroke(0);
+        rect(battleMenuX[select], 0, 80, 49); //Selection indicator
+        noStroke();
         fill(0);
-        text("Attack", 25, 25);
+        text("Attack", 20, 25);
         text("Abilities", 100, 25);
-        text("Items", 175, 25);
-        text("Defend", 250, 25);
-        text("Escape", 325, 25);
+        text("Items", 180, 25);
+        text("Defend", 260, 25);
+        text("Escape", 340, 25);
         
         battle();
     }
     if (scene === "bMenu") {
       if (keyWentDown(27)) {  //Leave items menu
         scene = "Battle";
+        select = 2;
+      }
+      else if (keyWentDown(39) && select < player.items.length - 1) { //Right
+        select++;
+      }
+      else if (keyWentDown(40) && select < player.items.length - 2) { //Down
+        select += 2;
+      }
+      else if (keyWentDown(37) && select > 0) { //Left
+        select--;
+      }
+      else if (keyWentDown(38) && select > 1) { //Up
+        select -= 2;
       }
       fill(173, 204, 255);
       rect(10, 60, 380, 250);
-      for (var i = 0; i < ceil(player.items.length); i++) {
-        for (var a = 0; a < 2; a++) {
+      stroke(0);
+      rect(bMenuX[select % 2], bMenuY[select], 188, 50);  //Selection indicator
+      noStroke();
+      for (var a = 0; a < player.items.length; a += 1) {
         fill(0);
-        text(player.items[i].name, 50 + (200 * a), 100 + (50 * i));
+        textSize(18);
+        if (a % 2 === 0) {
+          text(player.items[a].name, 40, 90 + (a * 25));
+        }
+        else {
+          text(player.items[a].name, 220, 65 + (a * 25))
         }
       }
     }
