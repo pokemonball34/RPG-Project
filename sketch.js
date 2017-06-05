@@ -519,5 +519,6 @@ function draw() {
       fill(255);
       textSize(32);
       text("GAME OVER", 100, 100);
+      text("Press esc to return to main menu", 120, 150);
     }
   }
