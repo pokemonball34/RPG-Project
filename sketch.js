@@ -1,4 +1,4 @@
-var scene = "GameOver";
+var scene = "Battle";
 var select = 0;
 var bMenuX = [10, 201];
 var bMenuY =[60, 60, 110, 110, 160, 160, 210, 210, 259, 259];
@@ -6,7 +6,9 @@ var battleMenuX = [0, 80, 160, 240, 319];
 var aMenuX = [10, 200];
 var aMenuY = [60, 60, 110, 110, 160, 160];
 var partyMembers = 1;
+var keyRefresh = true;
 var turn = 0;
+
 var mapHome = [
     [2, 0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 2, 1, 0],
     [2, 1, 0, 1, 0, 1, 2, 1, 0, 1, 0, 1, 0, 2, 0, 1],
@@ -24,14 +26,16 @@ var mapHome = [
 var items = {
   potion: {
     name: "Potion",
-    dmg: -20,
-    crit: 0,
+    target: "ally",
+    dmgtype: "heal",
+    heal: 20,
     description: "A potion that heals 20HP to one ally.",
   },
   
   bluePotion: {
     name: "Blue Potion",
-    dmg: -20,
+    dmgtype: "mprestore",
+    heal: 20,
     description: "A blue potion that recovers 20MP to an ally.",
     target: "ally"
   },
@@ -42,7 +46,10 @@ var items = {
     dmg: 50,
     crit: 0,
     description: "A heavenly piece of cheese that deals 50 damage of light damage to an enemy. It's filled with tons of holes...",
-    target: "enemy"
+    target: "enemy",
+    // use: function (target) {
+    //     target.hp -= this.dmg;
+    //   }
   },
   
   uhCheese: {
@@ -59,55 +66,89 @@ var spells = {
     name: "Embers",
     dmgtype: "fire",
     dmg: 30,
+    mpCost: 4,
     crit: 0,
     description: "A weak fire attack. Can cause the target to burn.",
     target: "enemy",
+    use: function (enemy) {
+      enemy.hp -= this.dmg;
+    }
   },
   sparks: {
     name: "Sparks",
     dmgtype: "elec",
     dmg: 40,
+    mpCost: 4,
     crit: 0,
     description: "A weak electric attack.",
-    target: "enemy"
+    target: "enemy",
+    use: function (enemy) {
+      enemy.hp -= this.dmg;
+    }
   },
   frost: {
     name: "Frost",
     dmgtype: "ice",
     dmg: 25,
+    mpCost: 4,
     crit: 0,
     description: "A weak ice attack. Can cause the target to become stunned.",
-    target: "enemy"
+    target: "enemy",
+    use: function (enemy) {
+      enemy.hp -= this.dmg;
+    }
   },
   glow: {
     name: "Glow",
     dmgtype: "light",
     dmg: 25,
+    mpCost: 4,
     crit: 0,
     description: "A weak light attack. If target is weak to light, it has a chance to do true damage to all foes.",
-    target: "enemy"
+    target: "enemy",
+    use: function (enemy) {
+      enemy.hp -= this.dmg;
+    }
   },
   shadows: {
     name: "Shadows",
     dmgtype: "dark",
     dmg: 25,
+    mpCost: 4,
     crit: 0,
     description: "A weak dark attack. If target is weak to darkness, it has a chance to do double damage to the target",
-    target: "enemy"
+    target: "enemy",
+    use: function (enemy) {
+      enemy.hp -= this.dmg;
+    }
   },
   soothe: {
     name: "Soothe",
-    dmg: -20,
+    heal: 20,
+    mpCost: 4,
     description: "Heals an ally a low amount of health",
-    target: "ally"
+    target: "ally",
+    use: function (player) {
+      player.hp += this.heal;
+      if (player.hp > player.maxHp) {
+        player.hp = player.maxHp;  
+      }
+    }
   },
   doubleSlash: {
     name: "Double Slash",
     dmgtype: "physical",
     dmg: 40,
+    hpCost: 0.05,
     crit: 10,
     description: "A weak physical attack that can hit twice.",
-    target: "enemy"
+    target: "enemy",
+    use: function (enemy) {
+      enemy.hp -= (this.dmg - enemy.def);
+      if (math.round(math.random(0, 100)) >= 33) {
+        enemy.hp -= (this.dmg - enemy.def);
+      }
+    }
   }
 };
 
@@ -233,33 +274,47 @@ function textbox() {
 
 function battle() {
   turnOrder.sort(function(a, b){return b-a});
-  if (keyWentDown(39) && select < 4) { //Right
-    select++;
+  if (turnOrder[turn] === player.spd) {
+    if (keyWentDown(39) && select < 4) { //Right
+      select++;
+    }
+    else if (keyWentDown(37) && select > 0) { //Left
+      select--;
+    }
+    else if (select === 0 && keyWentDown(13)) { //Attack Button
+      if (player.physAtk >= enemy.def) {
+        var dmg = player.physAtk - enemy.def;
+        enemy.hp -= dmg;
+      }
+      turn++;
+    }
+    else if (select === 1 && keyWentDown(13)) { //Abilities Button
+      scene = "aMenu";
+      select = 0;
+      keyRefresh = false;
+    }
+    else if (select === 2 && keyWentDown(13)) { //Items Button
+      scene = "bMenu";
+      select = 0;
+      keyRefresh = false;
+    }
+    else if (select === 3 && keyWentDown(13)) { //Defend Button
+      var defending = true;
+    }
+    else if (select === 4 && keyWentDown(13)) { //Escape Button
+      scene = "Overworld";
+      player.x -= 1;
+    }
   }
-  else if (keyWentDown(37) && select > 0) { //Left
-    select--;
-  }
-  else if (select === 0 && keyWentDown(13)) { //Attack Button
-    if (player.physAtk >= enemy.def) {
-      var dmg = player.physAtk - enemy.def;
-      enemy.hp -= dmg;
+  else if (turnOrder[turn] === enemy.spd) {
+    if (player.def < enemy.physAtk) {
+      player.hp -= (enemy.physAtk - player.def);
     }
     turn++;
   }
-  else if (select === 1 && keyWentDown(13)) { //Abilities Button
-    scene = "aMenu";
-    select = 0;
-  }
-  else if (select === 2 && keyWentDown(13)) { //Items Button
-    scene = "bMenu";
-    select = 0;
-  }
-  else if (select === 3 && keyWentDown(13)) { //Defend Button
-    var defending = true;
-  }
-  else if (select === 4 && keyWentDown(13)) { //Escape Button
-    scene = "Overworld";
-    player.x -= 1;
+  else if (turn >= turnOrder.length) {
+    turn = 0;
+    turnOrder.sort(function(a, b){return b-a});
   }
   if (enemy.hp <= 0) {
     scene = "Overworld";
@@ -341,14 +396,6 @@ function draw() {
         if (turn === 0) {
           scene === "Battle";
         }
-        if (turn === 1) {
-          var dmg = enemy.physAtk - player.def;
-          player.hp -= dmg;
-          turn++;
-        }
-        if (turn === 2) {
-        turn = 0;
-        }
         if (partyMembers <= 4) {
         //Player's Box 1
         fill(209);
@@ -417,24 +464,14 @@ function draw() {
         battle();
       }
     if (scene === "bMenu") {
-      if (keyWentDown(27)) {  //Leave items menu
-        scene = "Battle";
-        select = 2;
-      }
-      else if (keyWentDown(39) && select < player.items.length - 1) { //Right
-        select++;
-      }
-      else if (keyWentDown(40) && select < player.items.length - 2) { //Down
-        select += 2;
-      }
-      else if (keyWentDown(37) && select > 0) { //Left
-        select--;
-      }
-      else if (keyWentDown(38) && select > 1) { //Up
-        select -= 2;
-      }
       fill(173, 204, 255);
       rect(10, 60, 380, 250);
+      if (player.items.length <= 0) {
+        fill(0);
+        textSize(18);
+        text("You have nothing in your inventory...", 50, 100);
+      }
+      else {
       stroke(0);
       rect(bMenuX[select % 2], bMenuY[select], 188, 50);  //Selection indicator
       noStroke();
@@ -455,8 +492,53 @@ function draw() {
       textSize(18);
       fill(0);
       text(player.items[select].description, 25, 335, 365);
+      }
+      if (keyWentUp(13)) {
+        keyRefresh = true;
+      }
+      if (keyWentDown(27)) {  //Leave items menu
+        scene = "Battle";
+        select = 2;
+      }
+      else if (keyWentDown(39) && select < player.items.length - 1) { //Right
+        select++;
+      }
+      else if (keyWentDown(40) && select < player.items.length - 2) { //Down
+        select += 2;
+      }
+      else if (keyWentDown(37) && select > 0) { //Left
+        select--;
+      }
+      else if (keyWentDown(38) && select > 1) { //Up
+        select -= 2;
+      }
+      else if (keyWentDown(13) && keyRefresh === true && player.items.length > 0) { //Enter
+        if (player.items[select].target === "ally") {
+          if (player.items[select].dmgtype === "heal") {
+            player.hp += player.items[select].heal;
+            if (player.hp > player.maxHp) {
+              player.hp = player.maxHp;
+            }
+          }
+          else if (player.items[select].dmgtype === "mprestore") {
+            player.mp += player.items[select].heal;
+            if (player.mp > player.maxMp) {
+              player.mp = player.maxMp
+            }
+          }
+        }
+        else if (player.items[select].target === "enemy") {
+          enemy.hp -= player.items[select].dmg;
+        }
+        scene = "Battle";
+        player.items.splice(select, 1);
+        select = 2;
+      }
     }
     else if (scene === "aMenu") {
+      if (keyWentUp(13)) {
+        keyRefresh = true;
+      }
       if (keyWentDown(27)) {  //Leaves abilities menu
         scene = "Battle";
         select = 1;
@@ -472,6 +554,16 @@ function draw() {
       }
       else if (keyWentDown(38) && select > 1) { //Up
         select -= 2;
+      }
+      else if (keyWentDown(13) && keyRefresh === true) { //Enter
+        if (player.spells[select].target === "enemy") {
+          player.spells[select].use(enemy);
+        }
+        else if (player.spells[select].target === "ally") {
+          player.spells[select].use(player);
+        }
+        scene = "Battle";
+        select = 1;
       }
       fill(173, 204, 255);
       rect(10, 60, 380, 150);
@@ -519,6 +611,7 @@ function draw() {
       fill(255);
       textSize(32);
       text("GAME OVER", 100, 100);
+      textSize(18);
       text("Press esc to return to main menu", 120, 150);
     }
   }
